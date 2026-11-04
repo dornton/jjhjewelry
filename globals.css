@@ -1,0 +1,416 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --grain-opacity: 0.035;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ivory text-walnut font-sans antialiased;
+    line-height: 1.7;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif text-forest;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  h1 {
+    @apply text-4xl md:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  /* Focus ring: visible on ivory and on the deep green hero alike. */
+  :focus-visible {
+    outline: 2px solid theme('colors.burgundy');
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* Faint grain. Sits above the background, below content, ignores pointers. */
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-burgundy px-7 py-3 text-sm uppercase tracking-[0.14em] text-ivory transition-colors duration-200 hover:bg-forest disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 border border-line px-7 py-3 text-sm uppercase tracking-[0.14em] text-walnut transition-colors duration-200 hover:border-forest hover:text-forest;
+  }
+
+  .eyebrow {
+    @apply text-xs uppercase tracking-[0.22em] text-walnut/60;
+  }
+
+  .rule {
+    @apply border-t border-line;
+  }
+
+  .field {
+    @apply w-full border border-line bg-ivory px-4 py-3 text-walnut placeholder:text-walnut/40 focus:border-forest focus:outline-none;
+  }
+}
+
+/* Respect reduced-motion for the scroll-driven 3D and reveals. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================================================================
+   Editorial layer
+   Display type, reveals, rules, marquee. Kept out of @layer components
+   so they can override utility ordering where needed.
+   ================================================================== */
+
+/* Large Fraunces display setting. Tight tracking + sub-1 line-height is what
+   separates a boutique page from a default Tailwind hero. */
+.display {
+  font-family: var(--font-fraunces);
+  font-size: clamp(2.85rem, 7.4vw, 5.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.display em,
+.display .em {
+  font-style: italic;
+}
+
+.display-sm {
+  font-family: var(--font-fraunces);
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.balance {
+  text-wrap: balance;
+}
+
+/* Scroll reveal. IntersectionObserver only flips data-visible; the transition
+   is CSS, so no re-render happens while it plays. */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal[data-visible='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+::selection {
+  background: #7b2d3b;
+  color: #f5f0eb;
+}
+
+/* Marquee strip: content is duplicated once, so -50% is a seamless loop. */
+.marquee {
+  animation: marquee-scroll 46s linear infinite;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Hairline that draws in on hover — for text links, not buttons. */
+.link-rule {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link-rule:hover {
+  background-size: 100% 1px;
+}
+
+/* Editorial drop cap for the first paragraph of prose. */
+.dropcap::first-letter {
+  float: left;
+  font-family: var(--font-fraunces);
+  font-size: 3.5em;
+  line-height: 0.8;
+  padding-right: 0.1em;
+  padding-top: 0.08em;
+  color: #2d4a32;
+}
+
+/* Masked line reveal for display type. Each line sits in an overflow-hidden
+   box and the inner span slides up through it — typesetting rather than a
+   plain fade. Stagger with --i on each line. */
+.line-mask {
+  display: block;
+  overflow: hidden;
+  /* Descenders (g, y, italic tails) would otherwise be clipped. */
+  padding-bottom: 0.09em;
+  margin-bottom: -0.09em;
+}
+
+.line-mask > span {
+  display: block;
+  transform: translateY(108%);
+  animation: line-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+
+@keyframes line-in {
+  to {
+    transform: none;
+  }
+}
+
+/* Route transition. app/template.tsx remounts on navigation, so replaying a
+   CSS animation gives a page transition without a transition library — and
+   without blocking the new page from rendering. */
+.page-enter {
+  animation: page-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Wrapper for buttons that lean toward the cursor. inline-flex keeps it out
+   of the layout flow maths. */
+.magnetic {
+  display: inline-flex;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Warm haze behind the hero canvas. Sits under the transparent WebGL layer,
+   so it reads as light spilling off the metal rather than a panel. */
+.hero-glow {
+  background: radial-gradient(
+    circle at 50% 46%,
+    rgba(233, 220, 192, 0.18),
+    rgba(123, 45, 59, 0.1) 40%,
+    transparent 68%
+  );
+  animation: glow-breathe 11s ease-in-out infinite;
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Ghost wordmark with a slow sheen travelling across it. Background-clip keeps
+   the type as the mask, so there is no extra element or blend mode. */
+.ghost-wordmark {
+  background-image: linear-gradient(
+    100deg,
+    rgba(245, 240, 235, 0.04) 34%,
+    rgba(233, 220, 192, 0.17) 50%,
+    rgba(245, 240, 235, 0.04) 66%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: wordmark-sheen 9s ease-in-out infinite;
+}
+
+@keyframes wordmark-sheen {
+  0%,
+  100% {
+    background-position: 118% 0;
+  }
+  50% {
+    background-position: -18% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .marquee {
+    animation: none;
+  }
+
+  .line-mask > span {
+    transform: none;
+    animation: none;
+  }
+
+  .page-enter {
+    animation: none;
+  }
+
+  .magnetic {
+    transition: none;
+    transform: none !important;
+  }
+
+  .hero-glow {
+    animation: none;
+  }
+
+  .ghost-wordmark {
+    animation: none;
+    background-image: none;
+    color: rgba(245, 240, 235, 0.04);
+    -webkit-text-fill-color: rgba(245, 240, 235, 0.04);
+  }
+
+  .cursor-dot,
+  .cursor-ring,
+  .hero-spotlight {
+    display: none;
+  }
+
+  .btn-primary::after {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- pointer */
+
+/* Accent cursor: a solid dot locked to the pointer, a ring that trails it.
+   The system cursor is intentionally still visible — hiding it makes small
+   controls feel broken. */
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 90;
+  pointer-events: none;
+  border-radius: 9999px;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    width 0.3s ease,
+    height 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.cursor-dot {
+  width: 5px;
+  height: 5px;
+  background: #7b2d3b;
+}
+
+.cursor-ring {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(123, 45, 59, 0.45);
+}
+
+.cursor-ring[data-state='grow'] {
+  width: 56px;
+  height: 56px;
+  border-color: rgba(123, 45, 59, 0.65);
+  background: rgba(123, 45, 59, 0.05);
+}
+
+.cursor-dot[data-visible='true'],
+.cursor-ring[data-visible='true'] {
+  opacity: 1;
+}
+
+/* Pointer-following haze. `screen` only lightens, so it accumulates over the
+   forest background and the metal instead of washing it out. */
+.hero-spotlight {
+  background: radial-gradient(
+    420px circle at var(--mx, 50%) var(--my, 40%),
+    rgba(233, 220, 192, 0.16),
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+}
+
+/* Sheen sweep across the primary button — pseudo-element only, so the label
+   never reflows and the effect is one compositor layer on hover. */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background: linear-gradient(
+    112deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 66%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-primary:hover::after {
+  transform: translateX(130%);
+}
